@@ -1,8 +1,8 @@
 import { StatusBar } from 'expo-status-bar'
 import React, { useState } from 'react'
-import { KeyboardAvoidingView } from 'react-native'
-import { StyleSheet, Text, View } from 'react-native'
-import { Button, Input, Image } from 'react-native-elements';
+import { StyleSheet, View } from 'react-native'
+import { Button, Input, Image, Text } from 'react-native-elements';
+import { auth } from '../firebase';
 
 
 
@@ -13,17 +13,27 @@ const RegisterSrc = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [imageUrl, setImageUrl] = useState('');
 
-    const register = () => {
 
+
+    const register = () => {
+        auth
+            .createUserWithEmailAndPassword(email.trim(), password)
+            .then((authUser) => {
+                authUser.user.updateProfile({
+                    displayName: name,
+                    photoURL: imageUrl ||  "https://cencup.com/wp-content/uploads/2019/07/avatar-placeholder.png"
+                });
+            })
+            .catch((e) => alert(e.message));
     }
 
     return (
-        <KeyboardAvoidingView>
+        <View style={styles.container} >
             <StatusBar style="light" />
 
-            <Text h3 style={{ marginBottom: 50 }} >Create a Signal account</Text>
+            <Text h3 style={{marginBottom: 80}} >Create a Signal account</Text>
 
-            <View style={styles.container}>
+            <View style={styles.inputcontainer}>
                 <Input placeholder="Full Name" autoFocus type="text" value={name} onChangeText={(text) => setName(text)} />
 
                 <Input placeholder="Email" type="text" value={email} onChangeText={(text) => setEmail(text)} />
@@ -33,11 +43,27 @@ const RegisterSrc = ({ navigation }) => {
                 <Input placeholder="Profile Picture Url (Optional)" value={imageUrl} onChangeText={(text) => setImageUrl(text)} onSubmitEditing={register} />
             </View>
 
-            <Button title="Register" raised onPress={register} />
-        </KeyboardAvoidingView>
+            <Button containerStyle={styles.button} title="Register" raised onPress={register} />
+
+        </View>
     )
 }
 
 export default RegisterSrc
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        backgroundColor: 'white',
+    },
+    inputcontainer:{
+        width: 300,
+    },
+    button: {
+        width: 200,
+        marginTop: 10,
+    }
+});
